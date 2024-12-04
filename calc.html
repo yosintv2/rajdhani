@@ -71,6 +71,10 @@
         .item-price {
             color: #777;
         }
+        .quantity {
+            width: 40px;
+            text-align: center;
+        }
         .total-container {
             text-align: center;
             margin-top: 30px;
@@ -88,6 +92,39 @@
         }
         .calculation-details p {
             font-size: 16px;
+        }
+        .manual-calculation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .manual-calculation input {
+            width: 100px;
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .manual-calculation button {
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .manual-calculation .btn {
+            background-color: #FFB6C1;
+            color: white;
+        }
+        .manual-calculation .btn:hover {
+            background-color: #FF7F9C;
+        }
+        .manual-calculation .operation-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .manual-calculation .operation-btn:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -108,12 +145,27 @@
             <h3>Calculation Breakdown:</h3>
             <ul id="breakdown"></ul>
         </div>
+
+        <!-- Manual calculation inputs and buttons -->
+        <div class="manual-calculation">
+            <input type="number" id="manual-input" placeholder="Enter number" />
+            <button class="btn operation-btn" onclick="applyCalculation('+')">+</button>
+            <button class="btn operation-btn" onclick="applyCalculation('-')">-</button>
+            <button class="btn operation-btn" onclick="applyCalculation('*')">×</button>
+            <button class="btn operation-btn" onclick="applyCalculation('%')">%</button>
+        </div>
+
+        <div class="calculation-notes">
+            <h3>Calculation Notes:</h3>
+            <p id="calculation-notes">Click on the operation buttons to manually adjust the total. You can also adjust the quantity for each item in the menu.</p>
+        </div>
     </div>
 
     <script>
         let total = 0;
         let totalItems = 0;
         let selectedItems = [];
+        let manualInputValue = 0;
 
         // Function to fetch and render the menu
         const loadMenu = (file) => {
@@ -127,7 +179,7 @@
                 });
         };
 
-        // Function to render the menu items with checkboxes
+        // Function to render the menu items with checkboxes and quantity inputs
         const renderMenu = (items) => {
             const menuContainer = document.getElementById('menu');
             menuContainer.innerHTML = ''; // Clear the menu container
@@ -141,6 +193,7 @@
                 itemDiv.innerHTML = `
                     <span class="item-name">${item.name}</span>
                     <span class="item-price">₹${item.price}</span>
+                    <input type="number" class="quantity" id="quantity-${item.name}" value="1" min="1" onchange="updateTotal()" />
                     <input type="checkbox" class="item-checkbox" data-name="${item.name}" data-price="${item.price}" />
                 `;
                 itemsList.appendChild(itemDiv);
@@ -163,13 +216,16 @@
             selectedItems = [];
 
             checkboxes.forEach(checkbox => {
+                const quantityInput = document.getElementById(`quantity-${checkbox.dataset.name}`);
+                const quantity = parseInt(quantityInput.value);
                 if (checkbox.checked) {
                     const price = parseFloat(checkbox.dataset.price);
-                    total += price;
-                    totalItems++;
+                    total += price * quantity;
+                    totalItems += quantity;
                     selectedItems.push({
                         name: checkbox.dataset.name,
-                        price: price
+                        price: price,
+                        quantity: quantity
                     });
                 }
             });
@@ -187,9 +243,38 @@
 
             selectedItems.forEach(item => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${item.name}: ₹${item.price}`;
+                listItem.textContent = `${item.name} (x${item.quantity}): ₹${item.price * item.quantity}`;
                 breakdownContainer.appendChild(listItem);
             });
+        };
+
+        // Function to apply manual calculations
+        const applyCalculation = (operation) => {
+            const manualInput = document.getElementById('manual-input');
+            const inputValue = parseFloat(manualInput.value);
+
+            if (isNaN(inputValue)) return; // Ensure valid input
+
+            manualInputValue = inputValue;
+
+            switch (operation) {
+                case '+':
+                    total += inputValue;
+                    break;
+                case '-':
+                    total -= inputValue;
+                    break;
+                case '*':
+                    total *= inputValue;
+                    break;
+                case '%':
+                    total = total * (inputValue / 100);
+                    break;
+            }
+
+            document.querySelector('.total-price').textContent = `₹${total.toFixed(2)}`;
+            updateCalculationDetails();
+            manualInput.value = ''; // Reset the input field
         };
 
         // Load the Morning menu by default
