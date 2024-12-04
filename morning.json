@@ -1,4 +1,4 @@
 [
-    { "name": "Pancakes", "price": "$5" },
-    { "name": "Omelette", "price": "$4" }
+    { "name": "Pancakes", "price": " रु 500" },
+    { "name": "Omelette", "price": "रु 400" }
 ]
