@@ -1,4 +1,4 @@
 [
-    { "name": "Grilled Sandwich", "price": "$6" },
-    { "name": "Salad Bowl", "price": "$8" }
+    { "name": "Grilled Sandwich", "price": "रु 600" },
+    { "name": "Salad Bowl", "price": "रु 800" }
 ]
