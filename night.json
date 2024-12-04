@@ -1,4 +1,4 @@
 [
-    { "name": "Spaghetti", "price": "$12" },
-    { "name": "Grilled Chicken", "price": "$15" }
+    { "name": "Spaghetti", "price": "रु 120" },
+    { "name": "Grilled Chicken", "price": "रु 150" }
 ]
