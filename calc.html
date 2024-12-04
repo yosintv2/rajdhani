@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest House Menu with Calculator</title>
+    <title>Guest House Menu with Manual Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,51 +48,6 @@
             background-color: #FF7F9C;
             transform: scale(1.1);
         }
-        .category {
-            margin-top: 20px;
-        }
-        .items {
-            list-style: none;
-            padding: 0;
-        }
-        .item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            background: rgba(245, 245, 245, 0.8);
-            margin: 5px 0;
-            border-radius: 10px;
-        }
-        .item-name {
-            font-weight: bold;
-            color: #555;
-        }
-        .item-price {
-            color: #777;
-        }
-        .quantity {
-            width: 40px;
-            text-align: center;
-        }
-        .total-container {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .total-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-        .calculation-details {
-            margin-top: 20px;
-            background: #f7f7f7;
-            padding: 10px;
-            border-radius: 10px;
-        }
-        .calculation-details p {
-            font-size: 16px;
-        }
         .manual-calculation {
             display: flex;
             justify-content: center;
@@ -100,7 +55,7 @@
             margin-top: 30px;
         }
         .manual-calculation input {
-            width: 100px;
+            width: 150px;
             padding: 8px;
             font-size: 16px;
             border-radius: 5px;
@@ -126,38 +81,52 @@
         .manual-calculation .operation-btn:hover {
             background-color: #45a049;
         }
+        .total-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .total-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .calculation-details {
+            margin-top: 20px;
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .calculation-details p {
+            font-size: 16px;
+        }
+        .calculation-notes {
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
     <div class="menu-container">
-        <h1>Guest House Menu with Calculator</h1>
-        <div class="buttons">
-            <button class="button" onclick="loadMenu('morning.json')">Morning</button>
-            <button class="button" onclick="loadMenu('day.json')">Day</button>
-            <button class="button" onclick="loadMenu('night.json')">Night</button>
+        <h1>Guest House Menu with Manual Calculator</h1>
+        <div class="manual-calculation">
+            <input type="text" id="manual-item" placeholder="Enter item e.g., Pancakes" />
+            <input type="number" id="manual-quantity" placeholder="Quantity" />
+            <button class="btn" onclick="addItem()">+</button>
+            <button class="btn" onclick="applyDiscount()">5% Discount</button>
         </div>
-        <div id="menu"></div>
+
         <div class="total-container">
             <p>Total: <span class="total-price">₹0</span></p>
             <p>Items Selected: <span class="total-items">0</span></p>
         </div>
+
         <div class="calculation-details">
             <h3>Calculation Breakdown:</h3>
             <ul id="breakdown"></ul>
         </div>
 
-        <!-- Manual calculation inputs and buttons -->
-        <div class="manual-calculation">
-            <input type="number" id="manual-input" placeholder="Enter number" />
-            <button class="btn operation-btn" onclick="applyCalculation('+')">+</button>
-            <button class="btn operation-btn" onclick="applyCalculation('-')">-</button>
-            <button class="btn operation-btn" onclick="applyCalculation('*')">×</button>
-            <button class="btn operation-btn" onclick="applyCalculation('%')">%</button>
-        </div>
-
         <div class="calculation-notes">
             <h3>Calculation Notes:</h3>
-            <p id="calculation-notes">Click on the operation buttons to manually adjust the total. You can also adjust the quantity for each item in the menu.</p>
+            <p id="calculation-notes">Click on the + button to add items manually to your order.</p>
         </div>
     </div>
 
@@ -165,120 +134,79 @@
         let total = 0;
         let totalItems = 0;
         let selectedItems = [];
-        let manualInputValue = 0;
-
-        // Function to fetch and render the menu
-        const loadMenu = (file) => {
-            fetch(file)
-                .then(response => response.json())
-                .then(data => {
-                    renderMenu(data);
-                })
-                .catch(error => {
-                    console.error("Error loading menu:", error);
-                });
+        let itemPrices = {
+            "Pancakes": 5,
+            "Omelette": 4,
+            "Toast": 3
         };
 
-        // Function to render the menu items with checkboxes and quantity inputs
-        const renderMenu = (items) => {
-            const menuContainer = document.getElementById('menu');
-            menuContainer.innerHTML = ''; // Clear the menu container
+        // Function to add items manually
+        function addItem() {
+            const itemName = document.getElementById('manual-item').value;
+            const quantity = parseInt(document.getElementById('manual-quantity').value);
+            
+            if (!itemName || isNaN(quantity) || quantity <= 0) {
+                alert('Please enter a valid item and quantity');
+                return;
+            }
+            
+            const price = itemPrices[itemName];
+            if (!price) {
+                alert('Item not found in the menu');
+                return;
+            }
 
-            const itemsList = document.createElement('ul');
-            itemsList.className = 'items';
+            // Calculate item total price
+            const itemTotal = price * quantity;
+            selectedItems.push({ name: itemName, quantity, price, total: itemTotal });
 
-            items.forEach(item => {
-                const itemDiv = document.createElement('li');
-                itemDiv.className = 'item';
-                itemDiv.innerHTML = `
-                    <span class="item-name">${item.name}</span>
-                    <span class="item-price">₹${item.price}</span>
-                    <input type="number" class="quantity" id="quantity-${item.name}" value="1" min="1" onchange="updateTotal()" />
-                    <input type="checkbox" class="item-checkbox" data-name="${item.name}" data-price="${item.price}" />
-                `;
-                itemsList.appendChild(itemDiv);
-            });
+            total += itemTotal;
+            totalItems += quantity;
 
-            menuContainer.appendChild(itemsList);
-
-            // Add event listeners to checkboxes
-            const checkboxes = document.querySelectorAll('.item-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateTotal);
-            });
-        };
-
-        // Function to update total when an item is selected or deselected
-        const updateTotal = () => {
-            const checkboxes = document.querySelectorAll('.item-checkbox');
-            total = 0;
-            totalItems = 0;
-            selectedItems = [];
-
-            checkboxes.forEach(checkbox => {
-                const quantityInput = document.getElementById(`quantity-${checkbox.dataset.name}`);
-                const quantity = parseInt(quantityInput.value);
-                if (checkbox.checked) {
-                    const price = parseFloat(checkbox.dataset.price);
-                    total += price * quantity;
-                    totalItems += quantity;
-                    selectedItems.push({
-                        name: checkbox.dataset.name,
-                        price: price,
-                        quantity: quantity
-                    });
-                }
-            });
-
+            // Update UI
             document.querySelector('.total-price').textContent = `₹${total.toFixed(2)}`;
             document.querySelector('.total-items').textContent = totalItems;
-
             updateCalculationDetails();
-        };
+            updateCalculationNotes();
 
-        // Function to update the calculation breakdown
-        const updateCalculationDetails = () => {
+            // Reset fields
+            document.getElementById('manual-item').value = '';
+            document.getElementById('manual-quantity').value = '';
+        }
+
+        // Function to update the calculation details (breakdown)
+        function updateCalculationDetails() {
             const breakdownContainer = document.getElementById('breakdown');
-            breakdownContainer.innerHTML = ''; // Clear the previous breakdown
+            breakdownContainer.innerHTML = ''; // Clear previous breakdown
 
             selectedItems.forEach(item => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${item.name} (x${item.quantity}): ₹${item.price * item.quantity}`;
+                listItem.textContent = `${item.name} (x${item.quantity}): ₹${item.total}`;
                 breakdownContainer.appendChild(listItem);
             });
-        };
+        }
 
-        // Function to apply manual calculations
-        const applyCalculation = (operation) => {
-            const manualInput = document.getElementById('manual-input');
-            const inputValue = parseFloat(manualInput.value);
+        // Function to update the calculation notes
+        function updateCalculationNotes() {
+            const notesContainer = document.getElementById('calculation-notes');
+            let notes = 'Items manually added:\n';
+            selectedItems.forEach(item => {
+                notes += `${item.name} x${item.quantity} = ₹${item.total}\n`;
+            });
+            notes += `Total before discount: ₹${total}\n`;
+            notesContainer.textContent = notes;
+        }
 
-            if (isNaN(inputValue)) return; // Ensure valid input
+        // Function to apply a 5% discount to the total
+        function applyDiscount() {
+            const discount = 0.05;
+            const discountAmount = total * discount;
+            total -= discountAmount;
 
-            manualInputValue = inputValue;
-
-            switch (operation) {
-                case '+':
-                    total += inputValue;
-                    break;
-                case '-':
-                    total -= inputValue;
-                    break;
-                case '*':
-                    total *= inputValue;
-                    break;
-                case '%':
-                    total = total * (inputValue / 100);
-                    break;
-            }
-
+            // Update UI with the discounted total
             document.querySelector('.total-price').textContent = `₹${total.toFixed(2)}`;
-            updateCalculationDetails();
-            manualInput.value = ''; // Reset the input field
-        };
-
-        // Load the Morning menu by default
-        loadMenu('morning.json');
+            updateCalculationNotes();
+        }
     </script>
 </body>
 </html>
