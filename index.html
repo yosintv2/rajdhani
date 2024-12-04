@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest House Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .menu-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .category {
+            margin-top: 20px;
+        }
+        .items {
+            list-style: none;
+            padding: 0;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            font-weight: bold;
+            color: #555;
+        }
+        .item-price {
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Guest House Menu</h1>
+        <div class="buttons">
+            <button class="button" onclick="loadMenu('morning.json')">Morning</button>
+            <button class="button" onclick="loadMenu('day.json')">Day</button>
+            <button class="button" onclick="loadMenu('night.json')">Night</button>
+        </div>
+        <div id="menu"></div>
+    </div>
+
+    <script>
+        // Function to fetch and render the menu
+        const loadMenu = (file) => {
+            fetch(file)
+                .then(response => response.json())
+                .then(data => {
+                    renderMenu(data);
+                })
+                .catch(error => {
+                    console.error("Error loading menu:", error);
+                });
+        };
+
+        // Function to render the menu items
+        const renderMenu = (items) => {
+            const menuContainer = document.getElementById('menu');
+            menuContainer.innerHTML = ''; // Clear the menu container
+
+            const itemsList = document.createElement('ul');
+            itemsList.className = 'items';
+
+            items.forEach(item => {
+                const itemDiv = document.createElement('li');
+                itemDiv.className = 'item';
+                itemDiv.innerHTML = `
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-price">${item.price}</span>
+                `;
+                itemsList.appendChild(itemDiv);
+            });
+
+            menuContainer.appendChild(itemsList);
+        };
+
+        // Load the Morning menu by default
+        loadMenu('morning.json');
+    </script>
+</body>
+</html>
