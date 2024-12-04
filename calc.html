@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest House Menu with Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
+            color: #333;
+        }
+        .menu-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 36px;
+            text-shadow: 1px 1px 2px #aaa;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .button {
+            padding: 12px 24px;
+            background-color: #FFB6C1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .button:hover {
+            background-color: #FF7F9C;
+            transform: scale(1.1);
+        }
+        .category {
+            margin-top: 20px;
+        }
+        .items {
+            list-style: none;
+            padding: 0;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            background: rgba(245, 245, 245, 0.8);
+            margin: 5px 0;
+            border-radius: 10px;
+        }
+        .item-name {
+            font-weight: bold;
+            color: #555;
+        }
+        .item-price {
+            color: #777;
+        }
+        .total-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .total-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Guest House Menu with Calculator</h1>
+        <div class="buttons">
+            <button class="button" onclick="loadMenu('morning.json')">Morning</button>
+            <button class="button" onclick="loadMenu('day.json')">Day</button>
+            <button class="button" onclick="loadMenu('night.json')">Night</button>
+        </div>
+        <div id="menu"></div>
+        <div class="total-container">
+            <p>Total: <span class="total-price">₹0</span></p>
+        </div>
+    </div>
+
+    <script>
+        let total = 0;
+
+        // Function to fetch and render the menu
+        const loadMenu = (file) => {
+            fetch(file)
+                .then(response => response.json())
+                .then(data => {
+                    renderMenu(data);
+                })
+                .catch(error => {
+                    console.error("Error loading menu:", error);
+                });
+        };
+
+        // Function to render the menu items with checkboxes
+        const renderMenu = (items) => {
+            const menuContainer = document.getElementById('menu');
+            menuContainer.innerHTML = ''; // Clear the menu container
+
+            const itemsList = document.createElement('ul');
+            itemsList.className = 'items';
+
+            items.forEach(item => {
+                const itemDiv = document.createElement('li');
+                itemDiv.className = 'item';
+                itemDiv.innerHTML = `
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-price">₹${item.price}</span>
+                    <input type="checkbox" class="item-checkbox" data-price="${item.price}" />
+                `;
+                itemsList.appendChild(itemDiv);
+            });
+
+            menuContainer.appendChild(itemsList);
+
+            // Add event listeners to checkboxes
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateTotal);
+            });
+        };
+
+        // Function to update total when an item is selected or deselected
+        const updateTotal = () => {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            total = 0; // Reset total
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    total += parseFloat(checkbox.dataset.price);
+                }
+            });
+
+            document.querySelector('.total-price').textContent = `₹${total.toFixed(2)}`;
+        };
+
+        // Load the Morning menu by default
+        loadMenu('morning.json');
+    </script>
+</body>
+</html>
