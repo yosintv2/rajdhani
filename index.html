@@ -648,7 +648,7 @@
                 await db.collection('bookings').add(bookingData);
                 messageDiv.style.display = 'block';
                 messageDiv.className = 'alert alert-success';
-                messageDiv.textContent = 'Booking submitted successfully! We will call your for a confirmation soon.';
+                messageDiv.textContent = 'Booking submitted successfully! We will call you for a confirmation soon.';
                 document.getElementById('bookingForm').reset();
             } catch (error) {
                 messageDiv.style.display = 'block';
