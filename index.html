@@ -26,6 +26,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    
     <!-- Custom CSS -->
     <style>
         body {
@@ -198,6 +203,35 @@
             font-family: 'Playfair Display', serif;
             color: #d4af37;
         }
+
+        .booking-section {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            margin-bottom: 20px;
+        }
+        .booking-section h2 {
+            font-family: 'Playfair Display', serif;
+            color: #1a3c5e;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .booking-section .form-label {
+            font-family: 'Roboto', sans-serif;
+            color: #1a3c5e;
+            font-weight: 500;
+        }
+        .booking-section .form-control, .booking-section .form-select {
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+        }
+        .booking-section .alert {
+            margin-top: 20px;
+        }
+
+        
         .footer {
             background-color: #1a3c5e;
             color: #fff;
@@ -253,6 +287,47 @@
         </div>
     </section>
 
+ <!-- Booking Section -->
+    <section class="py-5" id="booking-section">
+        <div class="container">
+            <div class="booking-section">
+                <h2>Book Your Stay Online at Rajdhani Guest House</h2>
+                <p>Reserve your room at one of the top <strong>hotels in Kalanki</strong> with <strong>Rajdhani Guest House pricing</strong> that offers affordable luxury.</p>
+                <form id="bookingForm">
+                    <div class="mb-3">
+                        <label for="guestName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="guestName" required>
+                    </div>
+                    <div class="mb-3">
+        <label for="phoneNumber" class="form-label">Enter Nepali Number (10 digits)</label>
+        <input type="tel" class="form-control" id="phoneNumber" pattern="[0-9]{10}" placeholder="9800XXXX" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="checkInDate" class="form-label">Check-In Date</label>
+                        <input type="date" class="form-control" id="checkInDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="checkOutDate" class="form-label">Check-Out Date</label>
+                        <input type="date" class="form-control" id="checkOutDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roomType" class="form-label">Room Type</label>
+                        <select class="form-select" id="roomType" required>
+                            <option value="" disabled selected>Select a room type</option>
+                            <option value="Deluxe Single">Deluxe Single</option>
+                            <option value="Deluxe Double">Deluxe Double</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Booking</button>
+                </form>
+                <div id="bookingMessage" class="alert" style="display: none;"></div>
+            </div>
+        </div>
+    </section>
+    
+    
+    
     <!-- Gallery Section -->
     <section class="py-5" id="gallery">
         <div class="container">
@@ -482,5 +557,85 @@
             console.log("Call to Reserve button clicked");
         }
     </script>
+
+
+    <!-- Firebase Initialization and Booking Logic -->
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+ apiKey: "AIzaSyAsn9NIdHRbIF7JZ8GPohWM7ar2LZTLCE4",
+    authDomain: "rajdhani77-33a2e.firebaseapp.com",
+    projectId: "rajdhani77-33a2e",
+    storageBucket: "rajdhani77-33a2e.firebasestorage.app",
+    messagingSenderId: "601317784966",
+    appId: "1:601317784966:web:17c8e0470fdd2332eb4007",
+    measurementId: "G-4YPZPB7BS0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Smooth Scroll to Booking Section
+        function smoothScrollToBooking() {
+            document.querySelector('#booking-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Booking Form Submission
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageDiv = document.getElementById('bookingMessage');
+            const today = new Date().toISOString().split('T')[0];
+            const checkInDate = document.getElementById('checkInDate').value;
+            const checkOutDate = document.getElementById('checkOutDate').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const phoneRegex = /^[0-9]{10}$/;
+
+            // Validate dates
+            if (checkInDate < today) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = 'Check-in date must be today or later.';
+                return;
+            }
+            if (checkOutDate <= checkInDate) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = 'Check-out date must be after check-in date.';
+                return;
+            }
+            // Validate phone number
+            if (!phoneRegex.test(phoneNumber)) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = 'Please enter a valid Nepali phone number (e.g., 9800XXXXXX).';
+                return;
+            }
+
+            // Collect form data
+            const bookingData = {
+                guestName: document.getElementById('guestName').value,
+                phoneNumber: phoneNumber,
+                checkInDate: checkInDate,
+                checkOutDate: checkOutDate,
+                roomType: document.getElementById('roomType').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                confirmed: false
+            };
+
+            try {
+                // Save to Firestore
+                await db.collection('bookings').add(bookingData);
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-success';
+                messageDiv.textContent = 'Booking submitted successfully! We will call your for a confirmation soon.';
+                document.getElementById('bookingForm').reset();
+            } catch (error) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = 'Error submitting booking: ' + error.message;
+            }
+        });
+    </script>
+
+    
 </body>
 </html>
